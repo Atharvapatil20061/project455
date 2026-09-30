@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Study Resource Library | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;">Curated Study Library</h1>
+      <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.25rem;">
+        Master key concepts with peer-reviewed guides, cheat sheets, code walkthroughs, and problem sets.
+      </p>
+    </div>
+
+    <a href="{{ url_for('new_resource') }}" class="btn btn-primary">
+      <i class="bi bi-cloud-arrow-up-fill"></i> Contribute Guide
+    </a>
+  </div>
+
+  <!-- Search and Subject Filters -->
+  <form method="GET" action="{{ url_for('resources') }}" class="filter-bar">
+    <div class="search-input-wrap">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" name="search" class="search-input" placeholder="Search Python, Calculus, Big-O, Quantum Physics..." value="{{ search_query }}">
+    </div>
+
+    <div class="pill-group">
+      <a href="{{ url_for('resources', subject='All', category=selected_category, difficulty=selected_difficulty) }}" class="pill-btn {% if selected_subject == 'All' %}active{% endif %}">All Subjects</a>
+      {% for subj in subjects_list %}
+        <a href="{{ url_for('resources', subject=subj, category=selected_category, difficulty=selected_difficulty) }}" class="pill-btn {% if selected_subject == subj %}active{% endif %}">
+          {{ subj }}
+        </a>
+      {% endfor %}
+    </div>
+  </form>
+
+  <!-- Secondary Filters: Difficulty & Category -->
+  <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; align-items: center; flex-wrap: wrap; font-size: 0.9rem; color: var(--text-muted);">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-weight: 600;">Difficulty:</span>
+      {% for diff in ['All', 'Beginner', 'Intermediate', 'Advanced'] %}
+        <a href="{{ url_for('resources', subject=selected_subject, category=selected_category, difficulty=diff) }}" style="color: {% if selected_difficulty == diff %}var(--primary){% else %}var(--text-muted){% endif %}; font-weight: {% if selected_difficulty == diff %}700{% else %}500{% endif %}; text-decoration: none;">
+          {{ diff }}
+        </a>
+      {% endfor %}
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span style="font-weight: 600;">Format:</span>
+      {% for cat in ['All', 'Full Guide', 'Cheat Sheet', 'Study Notes'] %}
+        <a href="{{ url_for('resources', subject=selected_subject, category=cat, difficulty=selected_difficulty) }}" style="color: {% if selected_category == cat %}var(--primary){% else %}var(--text-muted){% endif %}; font-weight: {% if selected_category == cat %}700{% else %}500{% endif %}; text-decoration: none;">
+          {{ cat }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Resource Cards Grid -->
+  {% if resources %}
+    <div class="grid-3">
+      {% for res in resources %}
+        <div class="card card-clickable" onclick="window.location='{{ url_for('resource_detail', resource_id=res['id']) }}'">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <span class="badge {% if res['subject'] == 'Computer Science' %}badge-cs{% elif res['subject'] == 'Mathematics' %}badge-math{% elif res['subject'] == 'Web Development' %}badge-web{% else %}badge-physics{% endif %}">
+                {{ res['subject'] }}
+              </span>
+              <span class="badge badge-diff-{{ res['difficulty']|lower }}">
+                {{ res['difficulty'] }}
+              </span>
+            </div>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">
+              <i class="bi bi-clock"></i> {{ res['read_time_mins'] }}m
+            </span>
+          </div>
+
+          <h3 class="card-title">{{ res['title'] }}</h3>
+          <p class="card-desc">{{ res['description'] }}</p>
+
+          <div class="card-footer">
+            <span style="font-weight: 600;"><i class="bi bi-person-circle"></i> {{ res['author'] }}</span>
+            <div style="display: flex; gap: 0.75rem;">
+              <span><i class="bi bi-eye"></i> {{ res['views_count'] }}</span>
+              <span><i class="bi bi-download"></i> {{ res['downloads_count'] }}</span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-xl); border: 1px solid var(--border-subtle);">
+      <i class="bi bi-search" style="font-size: 3rem; color: var(--text-light); margin-bottom: 1rem; display: block;"></i>
+      <h3 style="font-size: 1.4rem; font-weight: 700;">No study resources found</h3>
+      <p style="color: var(--text-muted); margin-top: 0.5rem; max-width: 450px; margin-left: auto; margin-right: auto;">
+        Try adjusting your search terms or category filters, or contribute the very first guide on this topic!
+      </p>
+      <a href="{{ url_for('resources') }}" class="btn btn-secondary" style="margin-top: 1.25rem;">Reset Filters</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

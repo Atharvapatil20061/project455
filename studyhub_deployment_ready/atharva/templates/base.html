@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Online Study Hub | Master Any Subject Faster{% endblock %}</title>
+  
+  <!-- Bootstrap Icons CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <!-- Custom Design System Stylesheets -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <nav class="navbar">
+    <div class="container navbar-inner">
+      <a href="{{ url_for('index') }}" class="nav-brand">
+        <div class="brand-icon">
+          <i class="bi bi-book-half"></i>
+        </div>
+        <span>StudyHub</span>
+        <span class="brand-badge">2.0</span>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Links -->
+      <ul class="nav-links" id="navLinks">
+        <li><a href="{{ url_for('resources') }}" class="nav-link"><i class="bi bi-journal-bookmark"></i> Resources</a></li>
+        <li><a href="{{ url_for('pomodoro') }}" class="nav-link"><i class="bi bi-hourglass-split"></i> Pomodoro</a></li>
+        <li><a href="{{ url_for('flashcards') }}" class="nav-link"><i class="bi bi-card-checklist"></i> Flashcards</a></li>
+        <li><a href="{{ url_for('quizzes') }}" class="nav-link"><i class="bi bi-patch-check"></i> Quizzes</a></li>
+        <li><a href="{{ url_for('rooms') }}" class="nav-link"><i class="bi bi-people"></i> Study Rooms</a></li>
+        <li><a href="{{ url_for('planner') }}" class="nav-link"><i class="bi bi-calendar2-check"></i> Planner</a></li>
+        <li><a href="{{ url_for('community') }}" class="nav-link"><i class="bi bi-chat-square-dots"></i> Community</a></li>
+      </ul>
+
+      <!-- Action Buttons & Auth -->
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button type="button" class="btn-theme-toggle" id="themeToggleBtn" title="Toggle Dark/Light Mode">
+          <i class="bi bi-moon-stars-fill"></i>
+        </button>
+
+        {% if current_user %}
+          <a href="{{ url_for('dashboard') }}" class="user-menu-pill">
+            <div class="avatar-circle">
+              {{ current_user['username'][0]|upper }}
+            </div>
+            <span style="font-weight: 600; font-size: 0.9rem;">{{ current_user['full_name'] or current_user['username'] }}</span>
+          </a>
+          <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" title="Sign Out">
+            <i class="bi bi-box-arrow-right"></i>
+          </a>
+        {% else %}
+          <a href="{{ url_for('demo_login') }}" class="btn btn-outline-primary btn-sm" title="Quick 1-Click Demo Login">
+            <i class="bi bi-lightning-charge-fill"></i> Demo
+          </a>
+          <a href="{{ url_for('login') }}" class="btn btn-secondary btn-sm">Sign In</a>
+          <a href="{{ url_for('register') }}" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+
+        <!-- Mobile Menu Toggle Button -->
+        <button type="button" class="btn btn-secondary btn-sm" id="mobileMenuToggle" style="display: none;" aria-label="Menu">
+          <i class="bi bi-list"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages Alert Banner -->
+  <div class="container flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <i class="bi bi-info-circle-fill"></i>
+              <span>{{ message }}</span>
+            </div>
+            <span style="cursor: pointer;" onclick="this.parentElement.remove();">&times;</span>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Block -->
+  <main style="flex: 1;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Floating AI Study Assistant (EduBot) -->
+  <button type="button" class="edubot-toggle-btn" id="edubotToggleBtn" title="Chat with AI Study Buddy">
+    <i class="bi bi-robot"></i>
+  </button>
+
+  <div class="edubot-drawer" id="edubotDrawer">
+    <div class="edubot-header">
+      <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+        <i class="bi bi-stars"></i>
+        <span>EduBot - AI Study Buddy</span>
+      </div>
+      <button type="button" id="edubotCloseBtn" style="background: none; border: none; color: #fff; font-size: 1.25rem; cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Suggested Quick Prompts -->
+    <div style="padding: 0.65rem 0.85rem; background: var(--bg-main); border-bottom: 1px solid var(--border-subtle); display: flex; gap: 0.4rem; overflow-x: auto;">
+      <button type="button" class="ai-prompt-chip pill-btn" data-prompt="Explain Python Decorators simply with code">🐍 Decorators</button>
+      <button type="button" class="ai-prompt-chip pill-btn" data-prompt="What are Big-O complexities of common data structures?">⚡ Big-O</button>
+      <button type="button" class="ai-prompt-chip pill-btn" data-prompt="How do I maintain intense focus for 3 hours?">⏱️ Focus</button>
+    </div>
+
+    <div class="edubot-chat-history" id="edubotChatHistory">
+      <div class="edubot-msg edubot-msg-bot">
+        👋 Hi! I'm <strong>EduBot</strong>, your online study mentor. Ask me to explain any coding concept, review mathematical proofs, test your recall, or suggest a study plan!
+      </div>
+    </div>
+
+    <form class="edubot-input-form" id="edubotForm">
+      <input type="text" id="edubotInput" class="form-control" placeholder="Ask anything (e.g. Explain AsyncIO)..." autocomplete="off" style="font-size: 0.85rem; padding: 0.55rem 0.85rem;">
+      <button type="submit" class="btn btn-primary btn-sm" style="padding: 0 1rem;">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Global Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div class="nav-brand" style="margin-bottom: 1rem;">
+            <div class="brand-icon" style="width: 34px; height: 34px; font-size: 1rem;">
+              <i class="bi bi-book-half"></i>
+            </div>
+            <span>StudyHub</span>
+          </div>
+          <p style="margin-bottom: 1rem; max-width: 320px;">
+            The all-in-one high-performance learning sanctuary. Master programming, mathematics, physics, and science with active recall, live rooms, and intelligent tools.
+          </p>
+          <div style="display: flex; gap: 0.75rem; font-size: 1.25rem;">
+            <a href="#" style="color: var(--text-muted);"><i class="bi bi-github"></i></a>
+            <a href="#" style="color: var(--text-muted);"><i class="bi bi-discord"></i></a>
+            <a href="#" style="color: var(--text-muted);"><i class="bi bi-twitter-x"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Study Tools</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('pomodoro') }}">Pomodoro Timer</a></li>
+            <li><a href="{{ url_for('flashcards') }}">Flashcard Decks</a></li>
+            <li><a href="{{ url_for('quizzes') }}">Practice Quizzes</a></li>
+            <li><a href="{{ url_for('rooms') }}">Virtual Study Rooms</a></li>
+            <li><a href="{{ url_for('planner') }}">Daily Study Planner</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Subjects</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('resources', subject='Computer Science') }}">Computer Science</a></li>
+            <li><a href="{{ url_for('resources', subject='Mathematics') }}">Mathematics</a></li>
+            <li><a href="{{ url_for('resources', subject='Web Development') }}">Web Development</a></li>
+            <li><a href="{{ url_for('resources', subject='Physics') }}">Quantum Physics</a></li>
+            <li><a href="{{ url_for('resources', subject='Data Science') }}">Machine Learning</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('community') }}">Discussion Forum</a></li>
+            <li><a href="{{ url_for('new_resource') }}">Contribute Notes</a></li>
+            <li><a href="{{ url_for('dashboard') }}">Student Dashboard</a></li>
+            <li><a href="{{ url_for('login') }}">Sign In / Register</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 <strong>Online Study Hub</strong>. Crafted with Python, HTML5, CSS3, & Modern JavaScript.</div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="#" style="color: var(--text-muted);">Privacy Policy</a>
+          <a href="#" style="color: var(--text-muted);">Terms of Service</a>
+          <a href="#" style="color: var(--text-muted);">Status</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core JavaScript Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/assistant.js') }}"></script>
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>

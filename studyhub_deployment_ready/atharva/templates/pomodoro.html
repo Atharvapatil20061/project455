@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Pomodoro Focus Sanctuary | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="text-align: center; max-width: 600px; margin: 0 auto 2rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.5px;">Flow Pomodoro Sanctuary</h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.25rem;">
+      Eliminate cognitive friction. Lock in for uninterrupted intervals backed by synthesized ambient frequencies.
+    </p>
+  </div>
+
+  <div class="pomodoro-container">
+    <div class="pomodoro-card">
+      
+      <!-- Mode Selection Pills -->
+      <div class="timer-mode-pills">
+        <button type="button" class="timer-pill active" data-mode="pomodoro">Pomodoro (25m)</button>
+        <button type="button" class="timer-pill" data-mode="shortBreak">Short Break (5m)</button>
+        <button type="button" class="timer-pill" data-mode="longBreak">Long Break (15m)</button>
+      </div>
+
+      <!-- Circular SVG Countdown Timer -->
+      <div class="timer-circle-wrap">
+        <svg class="timer-svg" viewBox="0 0 300 300">
+          <circle class="timer-circle-bg" cx="150" cy="150" r="135"></circle>
+          <circle class="timer-circle-progress" id="timerProgressCircle" cx="150" cy="150" r="135"></circle>
+        </svg>
+
+        <div class="timer-display-inner">
+          <div class="timer-time" id="timerDisplay">25:00</div>
+          <div class="timer-status-text" id="timerStatusLabel">Focus Session</div>
+        </div>
+      </div>
+
+      <!-- Controls (Play/Pause, Reset, Skip) -->
+      <div class="timer-controls">
+        <button type="button" class="btn-timer-secondary" id="resetBtn" title="Reset Timer (R)">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+        
+        <button type="button" class="btn-timer-main" id="playPauseBtn" title="Start/Pause (Space)">
+          <i class="bi bi-play-fill"></i>
+        </button>
+
+        <button type="button" class="btn-timer-secondary" id="skipBtn" title="Skip Session (S)">
+          <i class="bi bi-skip-forward-fill"></i>
+        </button>
+      </div>
+
+      <!-- Completed Sessions Counter -->
+      <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted);">
+        Completed Focus Blocks Today: <span id="completedCount" style="color: var(--primary); font-size: 1.1rem;">0</span> 🍅
+      </div>
+
+      <!-- Synthesized Ambient Noise Engine -->
+      <div class="ambient-panel">
+        <div class="ambient-header">
+          <span style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="bi bi-soundwave" style="color: var(--primary);"></i> Ambient Focus Frequencies
+            <div class="equalizer-wrap" id="ambientEqualizer">
+              <div class="eq-bar"></div>
+              <div class="eq-bar"></div>
+              <div class="eq-bar"></div>
+              <div class="eq-bar"></div>
+            </div>
+          </span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Zero-Latency Web Audio API</span>
+        </div>
+
+        <div class="sound-chips">
+          <button type="button" class="sound-chip" data-sound="rain">
+            <i class="bi bi-cloud-rain-fill"></i> Gentle Rain
+          </button>
+          <button type="button" class="sound-chip" data-sound="lofi">
+            <i class="bi bi-headphones"></i> Lo-Fi Warmth
+          </button>
+          <button type="button" class="sound-chip" data-sound="whitenoise">
+            <i class="bi bi-wind"></i> White Noise
+          </button>
+          <button type="button" class="sound-chip" data-sound="brown">
+            <i class="bi bi-water"></i> Deep Waves
+          </button>
+        </div>
+      </div>
+
+      <!-- Connected Task Focus Selector -->
+      {% if tasks %}
+        <div style="margin-top: 1.5rem; text-align: left; padding: 1rem; background: var(--bg-main); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+          <label style="font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 0.4rem;">Focusing on Task:</label>
+          <select class="form-control" style="font-size: 0.9rem; padding: 0.5rem 0.75rem;">
+            <option value="">General Deep Study</option>
+            {% for t in tasks %}
+              <option value="{{ t['id'] }}">{{ t['title'] }} ({{ t['subject'] }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pomodoro.js') }}"></script>
+{% endblock %}

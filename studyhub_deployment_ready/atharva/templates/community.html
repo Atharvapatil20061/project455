@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Community & Q&A Forum | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;">Student Q&A & Community</h1>
+      <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.25rem;">
+        Ask tricky homework questions, share breakthroughs, and discuss study techniques with fellow scholars.
+      </p>
+    </div>
+
+    <a href="{{ url_for('new_topic') }}" class="btn btn-primary">
+      <i class="bi bi-patch-question-fill"></i> Ask a Question
+    </a>
+  </div>
+
+  <!-- Search and Categories -->
+  <form method="GET" action="{{ url_for('community') }}" class="filter-bar">
+    <div class="search-input-wrap">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" name="search" class="search-input" placeholder="Search discussion topics, algorithms, math proofs..." value="{{ search }}">
+    </div>
+
+    <div class="pill-group">
+      <a href="{{ url_for('community', category='All') }}" class="pill-btn {% if selected_category == 'All' %}active{% endif %}">All Topics</a>
+      <a href="{{ url_for('community', category='Computer Science') }}" class="pill-btn {% if selected_category == 'Computer Science' %}active{% endif %}">Computer Science</a>
+      <a href="{{ url_for('community', category='Mathematics') }}" class="pill-btn {% if selected_category == 'Mathematics' %}active{% endif %}">Mathematics</a>
+      <a href="{{ url_for('community', category='Study Techniques') }}" class="pill-btn {% if selected_category == 'Study Techniques' %}active{% endif %}">Study Techniques</a>
+    </div>
+  </form>
+
+  <!-- Discussion Topics List -->
+  <div class="card" style="padding: 0; overflow: hidden;">
+    {% if topics %}
+      <div style="display: flex; flex-direction: column;">
+        {% for t in topics %}
+          <div style="display: flex; gap: 1.25rem; padding: 1.5rem; border-bottom: 1px solid var(--border-subtle); align-items: flex-start; transition: var(--transition);" class="topic-row">
+            
+            <!-- Upvotes Counter Column -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 50px;">
+              <button type="button" class="btn btn-secondary btn-sm btn-upvote" data-topic-id="{{ t['id'] }}" style="padding: 4px 8px;" title="Upvote this discussion">
+                <i class="bi bi-arrow-up-circle-fill"></i>
+              </button>
+              <span class="upvote-count" style="font-weight: 800; font-size: 0.95rem; margin-top: 0.35rem; color: var(--text-main);">
+                {{ t['upvotes'] }}
+              </span>
+            </div>
+
+            <!-- Content Details -->
+            <div style="flex: 1;">
+              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.4rem; flex-wrap: wrap;">
+                <span class="badge badge-cs">{{ t['category'] }}</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">
+                  Posted by <strong>{{ t['author_name'] }}</strong> &bull; {{ t['created_at'] }}
+                </span>
+              </div>
+
+              <a href="{{ url_for('community_topic', topic_id=t['id']) }}" style="font-size: 1.2rem; font-weight: 700; color: var(--text-main); text-decoration: none; line-height: 1.35; display: block; margin-bottom: 0.5rem;">
+                {{ t['title'] }}
+              </a>
+
+              <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.75rem;">
+                {{ t['content'][:180] }}{% if t['content']|length > 180 %}...{% endif %}
+              </p>
+
+              <!-- Tags and Replies Count -->
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 0.4rem;">
+                  {% for tag in t['tags'].split(',') %}
+                    {% if tag.strip() %}
+                      <span style="font-size: 0.75rem; color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+                        #{{ tag.strip() }}
+                      </span>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+
+                <a href="{{ url_for('community_topic', topic_id=t['id']) }}" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem;">
+                  <i class="bi bi-chat-left-text"></i> {{ t['reply_count'] }} Answers
+                </a>
+              </div>
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+        <i class="bi bi-chat-square-dots" style="font-size: 3rem; color: var(--text-light); margin-bottom: 0.75rem; display: block;"></i>
+        <h3 style="font-size: 1.25rem; font-weight: 700;">No discussions found</h3>
+        <p style="margin-top: 0.25rem;">Be the first scholar to start a conversation in this category!</p>
+        <a href="{{ url_for('new_topic') }}" class="btn btn-primary btn-sm" style="margin-top: 1rem;">Ask a Question</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

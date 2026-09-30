@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding: 4rem 1.5rem 6rem;">
+  
+  <div class="card" style="max-width: 480px; margin: 0 auto; padding: 2.5rem;">
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div class="brand-icon" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">
+        <i class="bi bi-mortarboard-fill"></i>
+      </div>
+      <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px;">Join StudyHub</h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">
+        Start tracking study hours, mastering decks, and collaborating with peers.
+      </p>
+    </div>
+
+    <form method="POST" action="{{ url_for('register') }}">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" class="form-control" placeholder="e.g. Jordan Smith" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" class="form-control" placeholder="e.g. j_smith" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="e.g. jordan@university.edu" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password (min 6 characters)</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.75rem;">
+        Create Account &amp; Start Learning
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.75rem; font-size: 0.875rem; color: var(--text-muted);">
+      Already have an account? 
+      <a href="{{ url_for('login') }}" style="font-weight: 700;">Sign in here</a>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

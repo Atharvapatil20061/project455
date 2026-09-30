@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource['title'] }} | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <!-- Breadcrumbs -->
+  <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('resources') }}">Resources</a> &gt; 
+    <a href="{{ url_for('resources', subject=resource['subject']) }}">{{ resource['subject'] }}</a> &gt; 
+    <span>{{ resource['title'] }}</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start;">
+    
+    <!-- Left Column: Main Study Content -->
+    <article class="card" style="padding: 2.5rem;">
+      <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap;">
+        <span class="badge {% if resource['subject'] == 'Computer Science' %}badge-cs{% elif resource['subject'] == 'Mathematics' %}badge-math{% elif resource['subject'] == 'Web Development' %}badge-web{% else %}badge-physics{% endif %}">
+          {{ resource['subject'] }}
+        </span>
+        <span class="badge badge-diff-{{ resource['difficulty']|lower }}">{{ resource['difficulty'] }}</span>
+        <span style="font-size: 0.85rem; color: var(--text-muted); margin-left: auto;">
+          <i class="bi bi-clock"></i> {{ resource['read_time_mins'] }} mins read
+        </span>
+      </div>
+
+      <h1 style="font-size: 2.2rem; font-weight: 800; line-height: 1.25; margin-bottom: 1rem; letter-spacing: -0.5px;">
+        {{ resource['title'] }}
+      </h1>
+
+      <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2rem; border-left: 3px solid var(--primary); padding-left: 1rem;">
+        {{ resource['description'] }}
+      </p>
+
+      <!-- Key Takeaways Callout Box -->
+      {% if resource['key_takeaways'] %}
+        <div style="background: var(--primary-light); border: 1px solid rgba(79, 70, 229, 0.2); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2.5rem;">
+          <h4 style="color: var(--primary); font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i class="bi bi-check-all" style="font-size: 1.2rem;"></i> Key Concept Takeaways
+          </h4>
+          <div style="font-size: 0.95rem; line-height: 1.6; color: var(--text-main); white-space: pre-line;">
+            {{ resource['key_takeaways'] }}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Rich Article Content -->
+      <div id="renderedContent" style="font-size: 1.05rem; line-height: 1.8; color: var(--text-main);">
+        <pre id="rawMarkdown" style="display: none;">{{ resource['content'] }}</pre>
+      </div>
+
+      <!-- Action Buttons at bottom of study material -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 1rem;">
+        <button type="button" class="btn btn-outline-primary btn-bookmark-toggle" data-resource-id="{{ resource['id'] }}">
+          {% if is_bookmarked %}
+            <i class="bi bi-bookmark-fill" style="color: var(--primary);"></i> Saved
+          {% else %}
+            <i class="bi bi-bookmark"></i> Save to Bookmarks
+          {% endif %}
+        </button>
+
+        <a href="{{ url_for('download_resource', resource_id=resource['id']) }}" class="btn btn-secondary">
+          <i class="bi bi-download"></i> Download Study Sheet (.md)
+        </a>
+      </div>
+    </article>
+
+    <!-- Right Sidebar -->
+    <aside>
+      <!-- Author & Stats Card -->
+      <div class="card" style="margin-bottom: 1.5rem; padding: 1.5rem;">
+        <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Guide Author</h4>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+          <div class="avatar-circle" style="width: 44px; height: 44px; font-size: 1.1rem;">
+            {{ resource['author'][0]|upper }}
+          </div>
+          <div>
+            <div style="font-weight: 700;">{{ resource['author'] }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Verified StudyHub Educator</div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
+          <div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: var(--primary);">{{ resource['views_count'] }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">VIEWS</div>
+          </div>
+          <div>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #10b981;">{{ resource['downloads_count'] }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">DOWNLOADS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action / Study With Pomodoro -->
+      <div class="card" style="background: var(--primary-gradient); color: #fff; margin-bottom: 1.5rem; padding: 1.5rem; border: none;">
+        <h4 style="color: #fff; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">Ready to study this?</h4>
+        <p style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 1.25rem;">
+          Jump straight into a 25-minute Pomodoro sprint to review this material deeply.
+        </p>
+        <a href="{{ url_for('pomodoro') }}" class="btn btn-secondary" style="background: #fff; color: var(--primary); width: 100%; border: none;">
+          <i class="bi bi-play-fill"></i> Start 25m Timer
+        </a>
+      </div>
+
+      <!-- Related Resources -->
+      {% if related %}
+        <div class="card" style="padding: 1.25rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Related Study Materials</h4>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for rel in related %}
+              <div>
+                <a href="{{ url_for('resource_detail', resource_id=rel['id']) }}" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">
+                  {{ rel['title'] }}
+                </a>
+                <div style="font-size: 0.775rem; color: var(--text-muted);">{{ rel['read_time_mins'] }}m read &bull; {{ rel['difficulty'] }}</div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+    </aside>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Simple Client-side Markdown Render for the article
+document.addEventListener('DOMContentLoaded', () => {
+  const rawText = document.getElementById('rawMarkdown').textContent;
+  const target = document.getElementById('renderedContent');
+
+  let formatted = rawText
+    .replace(/^### (.*$)/gim, '<h3 style="font-size: 1.35rem; font-weight: 700; margin: 1.75rem 0 0.75rem; color: var(--text-main);">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 style="font-size: 1.65rem; font-weight: 800; margin: 2rem 0 1rem; color: var(--text-main);">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 style="font-size: 2rem; font-weight: 800; margin: 2.25rem 0 1rem; color: var(--text-main);">$1</h1>')
+    .replace(/```python([\s\S]*?)```/g, '<div style="margin: 1.5rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-subtle);"><div style="background: #1e293b; color: #94a3b8; padding: 6px 12px; font-size: 0.75rem; font-family: monospace; font-weight: bold;">PYTHON 3</div><pre style="background: #0f172a; color: #f8fafc; padding: 1.25rem; overflow-x: auto; font-family: monospace; font-size: 0.925rem; margin: 0;"><code>$1</code></pre></div>')
+    .replace(/```javascript([\s\S]*?)```/g, '<div style="margin: 1.5rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-subtle);"><div style="background: #1e293b; color: #94a3b8; padding: 6px 12px; font-size: 0.75rem; font-family: monospace; font-weight: bold;">JAVASCRIPT</div><pre style="background: #0f172a; color: #f8fafc; padding: 1.25rem; overflow-x: auto; font-family: monospace; font-size: 0.925rem; margin: 0;"><code>$1</code></pre></div>')
+    .replace(/```css([\s\S]*?)```/g, '<div style="margin: 1.5rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-subtle);"><div style="background: #1e293b; color: #94a3b8; padding: 6px 12px; font-size: 0.75rem; font-family: monospace; font-weight: bold;">CSS3</div><pre style="background: #0f172a; color: #f8fafc; padding: 1.25rem; overflow-x: auto; font-family: monospace; font-size: 0.925rem; margin: 0;"><code>$1</code></pre></div>')
+    .replace(/```([\s\S]*?)```/g, '<pre style="background: #0f172a; color: #f8fafc; padding: 1.25rem; border-radius: 12px; overflow-x: auto; font-family: monospace; font-size: 0.925rem; margin: 1.5rem 0;"><code>$1</code></pre>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code style="background: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em;">$1</code>')
+    .replace(/^\- (.*$)/gim, '<li style="margin-left: 1.5rem; margin-bottom: 0.4rem;">$1</li>')
+    .replace(/^\* (.*$)/gim, '<li style="margin-left: 1.5rem; margin-bottom: 0.4rem;">$1</li>')
+    .replace(/\n\n/g, '<br><br>');
+
+  target.innerHTML = formatted;
+});
+</script>
+{% endblock %}

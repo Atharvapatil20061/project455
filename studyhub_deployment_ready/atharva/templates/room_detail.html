@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ room['name'] }} | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 1.5rem 1.5rem 3rem;">
+  
+  <!-- Room Top Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+    <div>
+      <a href="{{ url_for('rooms') }}" style="font-size: 0.85rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+        <i class="bi bi-arrow-left"></i> All Study Rooms
+      </a>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 800; margin: 0;">{{ room['name'] }}</h1>
+        <span class="badge badge-cs">{{ room['subject'] }}</span>
+        <span style="font-size: 0.85rem; color: #10b981; font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+          {{ room['active_users'] }} Online
+        </span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
+      <!-- Ambient sound chip for room -->
+      <button type="button" class="sound-chip" id="roomAmbientToggle" data-sound="{{ room['bg_sound'] }}">
+        <i class="bi bi-volume-up-fill"></i> Sound: {{ room['bg_sound']|capitalize }}
+      </button>
+
+      <a href="{{ url_for('pomodoro') }}" target="_blank" class="btn btn-secondary btn-sm" title="Open Pomodoro in new tab">
+        <i class="bi bi-hourglass-split"></i> Open Timer
+      </a>
+    </div>
+  </div>
+
+  <!-- Interactive Room Workspace: Left = Whiteboard Canvas, Right = Room Chat -->
+  <div class="room-grid">
+    
+    <!-- Whiteboard Column -->
+    <div class="whiteboard-box">
+      <!-- Whiteboard Toolbar -->
+      <div class="whiteboard-toolbar">
+        <div class="canvas-controls">
+          <button type="button" class="tool-btn active" id="toolPencil" title="Pen Tool">
+            <i class="bi bi-pencil-fill"></i>
+          </button>
+          <button type="button" class="tool-btn" id="toolEraser" title="Eraser Tool">
+            <i class="bi bi-eraser-fill"></i>
+          </button>
+
+          <!-- Brush Size Selector -->
+          <select id="brushSizeSelect" style="padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); background: var(--bg-card); font-size: 0.85rem;">
+            <option value="2">Fine (2px)</option>
+            <option value="4" selected>Medium (4px)</option>
+            <option value="8">Thick (8px)</option>
+            <option value="16">Broad (16px)</option>
+          </select>
+        </div>
+
+        <!-- Color Palette -->
+        <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <div class="color-dot active" data-color="#4f46e5" style="background: #4f46e5;" title="Indigo"></div>
+          <div class="color-dot" data-color="#0f172a" style="background: #0f172a;" title="Black"></div>
+          <div class="color-dot" data-color="#10b981" style="background: #10b981;" title="Emerald"></div>
+          <div class="color-dot" data-color="#ef4444" style="background: #ef4444;" title="Red"></div>
+          <div class="color-dot" data-color="#f59e0b" style="background: #f59e0b;" title="Amber"></div>
+          <div class="color-dot" data-color="#06b6d4" style="background: #06b6d4;" title="Cyan"></div>
+        </div>
+
+        <div class="canvas-controls">
+          <button type="button" class="tool-btn" id="toolClear" title="Clear Whiteboard">
+            <i class="bi bi-trash3"></i>
+          </button>
+          <button type="button" class="tool-btn" id="toolDownload" title="Download Whiteboard (PNG)">
+            <i class="bi bi-download"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Canvas Area -->
+      <canvas id="whiteboardCanvas" class="whiteboard-canvas"></canvas>
+    </div>
+
+    <!-- Right Column: Live Chat & Participant Feed -->
+    <div class="room-chat-column">
+      <div class="room-chat-header">
+        <div style="font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 0.4rem;">
+          <i class="bi bi-chat-left-dots-fill" style="color: var(--primary);"></i>
+          <span>Room Discussion</span>
+        </div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="bi bi-broadcast"></i> Live</span>
+      </div>
+
+      <!-- Messages Stream -->
+      <div class="room-messages-box" id="roomMessagesBox">
+        {% for m in initial_messages %}
+          <div class="room-message-item">
+            <div class="avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem; flex-shrink: 0;">
+              {{ m['username'][0]|upper }}
+            </div>
+            <div class="message-bubble">
+              <div class="message-sender">{{ m['username'] }}</div>
+              <div>{{ m['message'] }}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Chat Input Form -->
+      <form class="room-chat-form" id="roomChatForm">
+        <input type="text" id="roomChatInput" class="form-control" placeholder="Type a message or question..." autocomplete="off" style="font-size: 0.85rem; padding: 0.55rem 0.85rem;">
+        <button type="submit" class="btn btn-primary btn-sm" style="padding: 0 1rem;">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/room.js') }}"></script>
+<script src="{{ url_for('static', filename='js/pomodoro.js') }}"></script>
+<script>
+  const roomId = {{ room['id'] }};
+  document.addEventListener('DOMContentLoaded', () => {
+    initRoom(roomId);
+
+    // Ambient button toggle
+    const ambientBtn = document.getElementById('roomAmbientToggle');
+    if (ambientBtn) {
+      ambientBtn.addEventListener('click', () => {
+        const soundType = ambientBtn.getAttribute('data-sound');
+        playAmbientSound(soundType);
+        ambientBtn.classList.toggle('active');
+      });
+    }
+  });
+</script>
+{% endblock %}

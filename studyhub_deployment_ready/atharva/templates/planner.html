@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Study Planner & To-Do Tracker | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;">Daily Study Planner</h1>
+      <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.25rem;">
+        Break big goals into actionable Pomodoro blocks and stay accountable every day.
+      </p>
+    </div>
+
+    <!-- Quick Add Task Trigger -->
+    <button type="button" class="btn btn-primary" onclick="document.getElementById('taskFormCard').scrollIntoView({behavior: 'smooth'}); document.getElementById('taskTitleInput').focus();">
+      <i class="bi bi-plus-circle-fill"></i> Add New Task
+    </button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start;">
+    
+    <!-- Left Column: Task List -->
+    <div>
+      <!-- Progress Summary Bar -->
+      <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span style="font-weight: 700; font-size: 0.95rem;">Daily Completion Velocity</span>
+          <span style="font-weight: 800; color: var(--primary);">{{ stats['task_completion_pct'] }}%</span>
+        </div>
+        <div style="width: 100%; height: 10px; background: var(--border-subtle); border-radius: 999px; overflow: hidden;">
+          <div style="height: 100%; width: {{ stats['task_completion_pct'] }}%; background: var(--primary-gradient);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 0.75rem; font-size: 0.825rem; color: var(--text-muted);">
+          <span>{{ stats['completed_tasks'] }} completed</span>
+          <span>{{ stats['total_tasks'] - stats['completed_tasks'] }} remaining</span>
+        </div>
+      </div>
+
+      <!-- Task Items -->
+      <div class="card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">Your Study Tasks</h3>
+
+        {% if tasks %}
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;" id="taskListContainer">
+            {% for t in tasks %}
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-card); transition: var(--transition);">
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="toggleTask({{ t['id'] }})" style="border-radius: 50%; width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    {% if t['status'] == 'completed' %}
+                      <i class="bi bi-check-lg" style="color: #10b981; font-weight: 800; font-size: 1.1rem;"></i>
+                    {% endif %}
+                  </button>
+
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600; font-size: 1rem; {% if t['status'] == 'completed' %}text-decoration: line-through; opacity: 0.55;{% endif %}">
+                      {{ t['title'] }}
+                    </div>
+                    <div style="font-size: 0.825rem; color: var(--text-muted); display: flex; gap: 0.6rem; align-items: center; margin-top: 0.25rem;">
+                      <span>{{ t['subject'] }}</span> &bull; 
+                      <span>Due: {{ t['due_date'] }}</span> &bull;
+                      <span class="badge {% if t['priority'] == 'High' %}badge-diff-advanced{% elif t['priority'] == 'Medium' %}badge-diff-intermediate{% else %}badge-diff-beginner{% endif %}" style="font-size: 0.65rem; padding: 1px 6px;">
+                        {{ t['priority'] }} Priority
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                  <span title="Estimated Pomodoro intervals" style="font-size: 0.85rem; font-weight: 700; color: #f97316;">
+                    🍅 {{ t['pomodoro_count'] }}
+                  </span>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="deleteTask({{ t['id'] }})" style="color: var(--accent-rose); border: none; background: transparent; padding: 4px;" title="Delete Task">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+            <i class="bi bi-calendar2-check" style="font-size: 3rem; color: #10b981; margin-bottom: 0.75rem; display: block;"></i>
+            <h4 style="font-size: 1.15rem; font-weight: 700;">No tasks on your plate</h4>
+            <p style="margin-top: 0.25rem;">Add your upcoming study goals and assignments using the form on the right.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Right Column: Add Task Form -->
+    <div>
+      <div class="card" id="taskFormCard" style="padding: 1.75rem;">
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.4rem;">
+          <i class="bi bi-pencil-square" style="color: var(--primary);"></i> Add Study Task
+        </h3>
+
+        <form method="POST" action="{{ url_for('api_tasks') }}">
+          <div class="form-group">
+            <label class="form-label">Task Objective</label>
+            <input type="text" id="taskTitleInput" name="title" class="form-control" placeholder="e.g. Implement Dijkstra in Python" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <select name="subject" class="form-control">
+              {% for s in subjects_list %}
+                <option value="{{ s }}">{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="text" name="due_date" class="form-control" placeholder="e.g. Today, Tomorrow, Oct 10" value="Today">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select name="priority" class="form-control">
+                <option value="High">High</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Pomodoros (🍅)</label>
+              <select name="pomodoro_count" class="form-control">
+                <option value="1">1 (25m)</option>
+                <option value="2" selected>2 (50m)</option>
+                <option value="3">3 (75m)</option>
+                <option value="4">4 (100m)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+            <i class="bi bi-plus-lg"></i> Add to Planner
+          </button>
+        </form>
+      </div>
+
+      <!-- Quick Study Quote / Motivation Card -->
+      <div class="card" style="margin-top: 1.5rem; background: var(--bg-main); padding: 1.25rem;">
+        <div style="font-size: 0.85rem; font-style: italic; color: var(--text-muted); line-height: 1.5;">
+          "Small daily disciplines repeated consistently over time lead to monumental academic breakthroughs."
+        </div>
+        <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">
+          &mdash; StudyHub Productivity Principle
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function toggleTask(taskId) {
+  try {
+    const resp = await fetch(`/api/tasks/${taskId}/toggle`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) {
+      location.reload();
+    }
+  } catch (err) {
+    showToast('Failed to update task', 'error');
+  }
+}
+
+async function deleteTask(taskId) {
+  if (confirm('Delete this task?')) {
+    try {
+      const resp = await fetch(`/api/tasks/${taskId}/delete`, { method: 'POST' });
+      const data = await resp.json();
+      if (data.success) {
+        location.reload();
+      }
+    } catch (err) {
+      showToast('Failed to delete task', 'error');
+    }
+  }
+}
+</script>
+{% endblock %}

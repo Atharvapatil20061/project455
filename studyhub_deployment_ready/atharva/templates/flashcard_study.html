@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Studying: {{ deck['title'] }} | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 5rem;">
+  
+  <!-- Breadcrumb & Top bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <a href="{{ url_for('flashcards') }}" style="font-size: 0.9rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem;">
+        <i class="bi bi-arrow-left"></i> Back to Decks
+      </a>
+      <h1 style="font-size: 2rem; font-weight: 800;">{{ deck['title'] }}</h1>
+      <span class="badge badge-cs">{{ deck['subject'] }}</span>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <button type="button" class="btn btn-secondary btn-sm" id="shuffleCardsBtn" title="Shuffle Cards">
+        <i class="bi bi-shuffle"></i> Shuffle
+      </button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="document.getElementById('addCardModal').style.display='flex'">
+        <i class="bi bi-plus-lg"></i> Add Card
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress Bar & Counter -->
+  <div style="max-width: 640px; margin: 0 auto 1.5rem;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem;">
+      <span>Card Progress</span>
+      <span id="cardCounter">1 / {{ cards|length }}</span>
+    </div>
+    <div style="width: 100%; height: 8px; background: var(--border-subtle); border-radius: 999px; overflow: hidden;">
+      <div id="flashcardProgressFill" style="height: 100%; width: 0%; background: var(--primary-gradient); transition: width 0.3s ease;"></div>
+    </div>
+  </div>
+
+  <!-- Flashcard Interactive 3D Stage -->
+  <div class="flashcard-stage">
+    <div class="flashcard-card-box" id="flashcardBox" title="Click or press Space to flip">
+      
+      <!-- Front Face (Question) -->
+      <div class="card-face card-face-front">
+        <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+          <span><i class="bi bi-question-circle"></i> Question</span>
+          <span>Click to Flip <i class="bi bi-arrow-repeat"></i></span>
+        </div>
+
+        <div class="card-question" id="cardQuestion">Loading question...</div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div id="cardHint" class="card-hint" style="display: none;"></div>
+          <span style="font-size: 0.75rem; color: var(--text-light); margin-left: auto;">Press Space to Flip</span>
+        </div>
+      </div>
+
+      <!-- Back Face (Answer) -->
+      <div class="card-face card-face-back">
+        <div style="display: flex; justify-content: space-between; align-items: center; color: var(--primary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+          <span><i class="bi bi-lightbulb-fill"></i> Answer & Breakdown</span>
+          <span>Click to Flip <i class="bi bi-arrow-repeat"></i></span>
+        </div>
+
+        <div class="card-answer" id="cardAnswer">Loading answer...</div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted);">
+          <span>Self-Assess your recall below:</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Rating / Self-grading Toolbar -->
+  <div class="flashcard-toolbar">
+    <button type="button" class="btn btn-secondary btn-sm" id="prevCardBtn" title="Previous (Left Arrow)">
+      <i class="bi bi-arrow-left"></i> Prev
+    </button>
+
+    <div class="self-rate-group">
+      <button type="button" class="btn-rate rate-hard" data-rating="hard" title="Press 1">
+        Hard (1)
+      </button>
+      <button type="button" class="btn-rate rate-med" data-rating="med" title="Press 2">
+        Medium (2)
+      </button>
+      <button type="button" class="btn-rate rate-easy" data-rating="easy" title="Press 3">
+        Easy (3)
+      </button>
+    </div>
+
+    <button type="button" class="btn btn-secondary btn-sm" id="nextCardBtn" title="Next (Right Arrow)">
+      Next <i class="bi bi-arrow-right"></i>
+    </button>
+  </div>
+
+  <!-- Keyboard Shortcuts Helper Tip -->
+  <div style="text-align: center; margin-top: 2.5rem; font-size: 0.825rem; color: var(--text-muted);">
+    <i class="bi bi-keyboard"></i> Shortcuts: <strong>Space</strong> Flip &bull; <strong>&larr; / &rarr;</strong> Prev / Next &bull; <strong>1, 2, 3</strong> Rate Card
+  </div>
+
+  <!-- Add Card Modal -->
+  <div id="addCardModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 100%; max-width: 500px; padding: 2rem; margin: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Add Card to Deck</h3>
+        <button type="button" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('addCardModal').style.display='none'">&times;</button>
+      </div>
+
+      <form method="POST" action="{{ url_for('api_add_card') }}">
+        <input type="hidden" name="deck_id" value="{{ deck['id'] }}">
+
+        <div class="form-group">
+          <label class="form-label">Question (Front)</label>
+          <textarea name="question" class="form-control" style="min-height: 80px;" placeholder="e.g. What is the time complexity of binary search?" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Answer (Back)</label>
+          <textarea name="answer" class="form-control" style="min-height: 100px;" placeholder="e.g. O(log N) because the search range is halved at each step." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hint (Optional)</label>
+          <input type="text" name="hint" class="form-control" placeholder="e.g. Think of dividing in halves...">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('addCardModal').style.display='none'">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/flashcards.js') }}"></script>
+<script>
+  const rawCards = {{ cards|tojson }};
+  document.addEventListener('DOMContentLoaded', () => {
+    initFlashcards(rawCards);
+  });
+</script>
+{% endblock %}

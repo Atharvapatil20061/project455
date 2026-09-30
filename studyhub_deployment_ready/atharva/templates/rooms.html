@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Virtual Study Rooms | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;">Virtual Study Rooms</h1>
+      <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.25rem;">
+        Study alongside focused peers across the globe. Join a quiet space, share notes, and draw on live whiteboards.
+      </p>
+    </div>
+
+    <!-- Create Room Button -->
+    <button type="button" class="btn btn-primary" onclick="document.getElementById('createRoomModal').style.display='flex'">
+      <i class="bi bi-door-open-fill"></i> Create Study Room
+    </button>
+  </div>
+
+  <!-- Rooms Grid -->
+  <div class="grid-3">
+    {% for r in rooms %}
+      <div class="card card-clickable" onclick="window.location='{{ url_for('study_room', room_id=r['id']) }}'">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <span class="badge badge-cs">{{ r['subject'] }}</span>
+          <span style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: #10b981; font-weight: 700;">
+            <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+            {{ r['active_users'] }} studying now
+          </span>
+        </div>
+
+        <h3 class="card-title">{{ r['name'] }}</h3>
+        <p class="card-desc">{{ r['description'] }}</p>
+
+        <div class="card-footer">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">
+            <i class="bi bi-headphones"></i> Sound: {{ r['bg_sound']|capitalize }}
+          </span>
+
+          <span class="btn btn-primary btn-sm">
+            Enter Room <i class="bi bi-box-arrow-in-right"></i>
+          </span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Create Room Modal -->
+  <div id="createRoomModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="card" style="width: 100%; max-width: 480px; padding: 2rem; margin: 1rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.25rem; font-weight: 700;">Host a Study Room</h3>
+        <button type="button" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);" onclick="document.getElementById('createRoomModal').style.display='none'">&times;</button>
+      </div>
+
+      <form method="POST" action="{{ url_for('new_room') }}">
+        <div class="form-group">
+          <label class="form-label">Room Name</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Midnight Algorithms Grinders" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subject Focus</label>
+          <select name="subject" class="form-control">
+            {% for s in subjects_list %}
+              <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Study Ambiance</label>
+          <select name="bg_sound" class="form-control">
+            <option value="rain">Gentle Rain</option>
+            <option value="lofi">Lo-Fi Cafe</option>
+            <option value="whitenoise">White Noise</option>
+            <option value="silent">Complete Silence</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Room Description / Guidelines</label>
+          <textarea name="description" class="form-control" style="min-height: 80px;" placeholder="e.g. 50/10 Pomodoros, silent work, ask questions in chat."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('createRoomModal').style.display='none'">Cancel</button>
+          <button type="submit" class="btn btn-primary">Launch Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

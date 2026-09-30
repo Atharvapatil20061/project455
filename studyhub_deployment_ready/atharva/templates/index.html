@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}📚 Online Study Hub | Master Any Subject Faster{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container hero-content">
+    <div class="hero-pill">
+      <i class="bi bi-stars"></i> Next-Generation High-Performance Learning
+    </div>
+    <h1 class="hero-title">
+      Learn Deeper. Focus Longer.<br>
+      <span class="gradient-text">Master Any Subject Faster.</span>
+    </h1>
+    <p class="hero-desc">
+      Your all-in-one digital campus: deep-work Pomodoro cycles, interactive flashcards with spaced repetition, live peer study rooms with digital whiteboards, and comprehensive STEM knowledge libraries.
+    </p>
+
+    <div class="hero-cta">
+      <a href="{{ url_for('pomodoro') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-play-circle-fill"></i> Start Studying Now
+      </a>
+      <a href="{{ url_for('resources') }}" class="btn btn-secondary btn-lg">
+        <i class="bi bi-search"></i> Explore Resources
+      </a>
+      {% if not current_user %}
+        <a href="{{ url_for('demo_login') }}" class="btn btn-outline-primary btn-lg">
+          <i class="bi bi-lightning-charge-fill"></i> 1-Click Demo
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- Live Platform Stats Bar -->
+    <div class="hero-stats-bar">
+      <div class="hero-stat-item">
+        <div class="hero-stat-value">{{ platform_stats['users'] }}+</div>
+        <div class="hero-stat-label">Active Learners</div>
+      </div>
+      <div class="hero-stat-item">
+        <div class="hero-stat-value">{{ platform_stats['study_hours'] }}+</div>
+        <div class="hero-stat-label">Study Hours Logged</div>
+      </div>
+      <div class="hero-stat-item">
+        <div class="hero-stat-value">{{ platform_stats['resources'] }}+</div>
+        <div class="hero-stat-label">Curated Guides & Notes</div>
+      </div>
+      <div class="hero-stat-item">
+        <div class="hero-stat-value">{{ platform_stats['quizzes'] * 5 }}+</div>
+        <div class="hero-stat-label">Practice Questions</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Core Features Section -->
+<section style="padding: 4rem 0;">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Everything You Need to Excel</h2>
+        <p class="section-subtitle">Scientifically backed tools designed to induce flow state and maximize retention.</p>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <!-- Feature 1: Pomodoro -->
+      <div class="card">
+        <div class="card-icon icon-purple">
+          <i class="bi bi-hourglass-split"></i>
+        </div>
+        <h3 class="card-title">Flow Pomodoro Timer</h3>
+        <p class="card-desc">
+          Customize 25/5 or 50/10 focus intervals with synthesized binaural rain, lo-fi, and white noise to drown out distractions.
+        </p>
+        <div class="card-footer">
+          <a href="{{ url_for('pomodoro') }}" class="btn btn-outline-primary btn-sm">Launch Timer <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Feature 2: Flashcards -->
+      <div class="card">
+        <div class="card-icon icon-emerald">
+          <i class="bi bi-card-checklist"></i>
+        </div>
+        <h3 class="card-title">Spaced Repetition Flashcards</h3>
+        <p class="card-desc">
+          3D interactive flip cards with adaptive rating algorithms to ensure you remember critical algorithms, formulas, and syntax.
+        </p>
+        <div class="card-footer">
+          <a href="{{ url_for('flashcards') }}" class="btn btn-outline-primary btn-sm">Practice Cards <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Feature 3: Virtual Study Rooms -->
+      <div class="card">
+        <div class="card-icon icon-cyan">
+          <i class="bi bi-people-fill"></i>
+        </div>
+        <h3 class="card-title">Live Peer Study Rooms</h3>
+        <p class="card-desc">
+          Collaborate in quiet virtual study spaces with an interactive scratchpad whiteboard, participant check-ins, and peer chat.
+        </p>
+        <div class="card-footer">
+          <a href="{{ url_for('rooms') }}" class="btn btn-outline-primary btn-sm">Join a Room <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Feature 4: Quizzes -->
+      <div class="card">
+        <div class="card-icon icon-amber">
+          <i class="bi bi-patch-check-fill"></i>
+        </div>
+        <h3 class="card-title">Interactive Quizzes & Tests</h3>
+        <p class="card-desc">
+          Timed evaluations with instant scoring, step-by-step explanations, performance analytics, and mastery badges.
+        </p>
+        <div class="card-footer">
+          <a href="{{ url_for('quizzes') }}" class="btn btn-outline-primary btn-sm">Take a Quiz <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Feature 5: Knowledge Library -->
+      <div class="card">
+        <div class="card-icon icon-rose">
+          <i class="bi bi-journal-code"></i>
+        </div>
+        <h3 class="card-title">Curated STEM Resource Library</h3>
+        <p class="card-desc">
+          In-depth guides, downloadable cheat sheets, and problem sets covering Python, Algorithms, Calculus, Quantum Physics, and Web Dev.
+        </p>
+        <div class="card-footer">
+          <a href="{{ url_for('resources') }}" class="btn btn-outline-primary btn-sm">Browse Guides <i class="bi bi-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <!-- Feature 6: AI Study Buddy -->
+      <div class="card">
+        <div class="card-icon icon-purple">
+          <i class="bi bi-robot"></i>
+        </div>
+        <h3 class="card-title">EduBot AI Assistant</h3>
+        <p class="card-desc">
+          24/7 intelligent study buddy ready to break down complex proofs, explain code bugs, or generate custom practice questions.
+        </p>
+        <div class="card-footer">
+          <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('edubotDrawer').classList.add('active');">
+            Chat with EduBot <i class="bi bi-chat-dots-fill"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Study Resources Preview -->
+<section style="padding: 4rem 0; background: var(--bg-card); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Trending Study Materials</h2>
+        <p class="section-subtitle">Highly rated guides, visual roadmaps, and cheat sheets prepared by top educators.</p>
+      </div>
+      <a href="{{ url_for('resources') }}" class="btn btn-secondary">
+        View All ({{ platform_stats['resources'] }}) <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="grid-2">
+      {% for res in featured_resources %}
+        <div class="card card-clickable" onclick="window.location='{{ url_for('resource_detail', resource_id=res['id']) }}'">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="badge {% if res['subject'] == 'Computer Science' %}badge-cs{% elif res['subject'] == 'Mathematics' %}badge-math{% elif res['subject'] == 'Web Development' %}badge-web{% else %}badge-physics{% endif %}">
+                {{ res['subject'] }}
+              </span>
+              <span class="badge badge-diff-{{ res['difficulty']|lower }}">
+                {{ res['difficulty'] }}
+              </span>
+            </div>
+            <span style="font-size: 0.825rem; color: var(--text-muted);">
+              <i class="bi bi-clock"></i> {{ res['read_time_mins'] }}m read
+            </span>
+          </div>
+
+          <h3 class="card-title">{{ res['title'] }}</h3>
+          <p class="card-desc">{{ res['description'] }}</p>
+
+          <div class="card-footer">
+            <span style="font-weight: 600;"><i class="bi bi-person-circle"></i> {{ res['author'] }}</span>
+            <div style="display: flex; gap: 1rem;">
+              <span><i class="bi bi-eye"></i> {{ res['views_count'] }}</span>
+              <span><i class="bi bi-download"></i> {{ res['downloads_count'] }}</span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Active Virtual Study Rooms Preview -->
+<section style="padding: 4rem 0;">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Live Study Rooms Now In Session</h2>
+        <p class="section-subtitle">Join peers studying together in real time with synchronized ambience and shared whiteboards.</p>
+      </div>
+      <a href="{{ url_for('rooms') }}" class="btn btn-secondary">
+        Browse All Rooms <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="grid-3">
+      {% for r in rooms %}
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span class="badge badge-cs">{{ r['subject'] }}</span>
+            <span style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: #10b981; font-weight: 700;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+              {{ r['active_users'] }} Online
+            </span>
+          </div>
+
+          <h3 class="card-title">{{ r['name'] }}</h3>
+          <p class="card-desc">{{ r['description'] }}</p>
+
+          <div class="card-footer">
+            <span><i class="bi bi-music-note-beamed"></i> Ambience: {{ r['bg_sound']|capitalize }}</span>
+            <a href="{{ url_for('study_room', room_id=r['id']) }}" class="btn btn-primary btn-sm">
+              Enter Room <i class="bi bi-box-arrow-in-right"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section style="padding: 4rem 0 6rem;">
+  <div class="container">
+    <div style="background: var(--primary-gradient); border-radius: var(--radius-xl); padding: 3.5rem 2rem; text-align: center; color: #fff; box-shadow: var(--shadow-xl);">
+      <h2 style="font-size: 2.4rem; font-weight: 800; margin-bottom: 1rem; color: #fff;">
+        Ready to Reach Peak Academic Flow?
+      </h2>
+      <p style="font-size: 1.15rem; max-width: 600px; margin: 0 auto 2rem; opacity: 0.9;">
+        Join thousands of students and self-learners accelerating their mastery with StudyHub. Free forever, open-source, and distraction-free.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('register') }}" class="btn btn-secondary btn-lg" style="background: #fff; color: var(--primary); border: none;">
+          Create Free Account
+        </a>
+        <a href="{{ url_for('demo_login') }}" class="btn btn-outline-primary btn-lg" style="color: #fff; border-color: rgba(255,255,255,0.6);">
+          Instant Demo Access
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

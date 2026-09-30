@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.5rem 5rem;">
+  
+  <!-- Dashboard Top Bar / Welcome -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px;">
+          Welcome back, {{ stats['user']['full_name'] or stats['user']['username'] }}!
+        </h1>
+        <span style="background: rgba(249, 115, 22, 0.12); color: #f97316; padding: 0.3rem 0.8rem; border-radius: var(--radius-full); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; gap: 0.35rem;">
+          🔥 {{ stats['user']['streak_days'] }} Day Streak
+        </span>
+      </div>
+      <p style="color: var(--text-muted); margin-top: 0.25rem;">
+        {{ stats['user']['bio'] or 'Track your learning velocity and daily goals.' }}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+      <a href="{{ url_for('pomodoro') }}" class="btn btn-primary">
+        <i class="bi bi-play-fill"></i> Quick Study Session
+      </a>
+      <a href="{{ url_for('profile') }}" class="btn btn-secondary">
+        <i class="bi bi-gear"></i> Settings
+      </a>
+    </div>
+  </div>
+
+  <!-- Key Metric Summary Cards -->
+  <div class="grid-4" style="margin-bottom: 2.5rem;">
+    <!-- Metric 1: Total Study Time -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Study Time</span>
+        <div class="card-icon icon-purple" style="width: 36px; height: 36px; font-size: 1.1rem; margin-bottom: 0;">
+          <i class="bi bi-clock-history"></i>
+        </div>
+      </div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); line-height: 1.2;">
+        {{ (stats['user']['total_study_minutes'] / 60)|round(1) }} hrs
+      </div>
+      <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.5rem;">
+        Goal: {{ stats['user']['study_goal_hours'] }} hrs / week
+      </div>
+      <!-- Progress Bar -->
+      <div style="width: 100%; height: 6px; background: var(--border-subtle); border-radius: 999px; margin-top: 0.5rem; overflow: hidden;">
+        <div style="height: 100%; width: {{ [((stats['user']['total_study_minutes'] / 60) / stats['user']['study_goal_hours'] * 100)|round, 100]|min }}%; background: var(--primary-gradient);"></div>
+      </div>
+    </div>
+
+    <!-- Metric 2: Daily Streak -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Consistency</span>
+        <div class="card-icon icon-amber" style="width: 36px; height: 36px; font-size: 1.1rem; margin-bottom: 0;">
+          <i class="bi bi-fire"></i>
+        </div>
+      </div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: #f97316; line-height: 1.2;">
+        {{ stats['user']['streak_days'] }} Days
+      </div>
+      <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.5rem;">
+        Keep studying daily to maintain momentum!
+      </div>
+    </div>
+
+    <!-- Metric 3: Tasks Done -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Planner Progress</span>
+        <div class="card-icon icon-emerald" style="width: 36px; height: 36px; font-size: 1.1rem; margin-bottom: 0;">
+          <i class="bi bi-check2-circle"></i>
+        </div>
+      </div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: var(--accent-emerald); line-height: 1.2;">
+        {{ stats['completed_tasks'] }} / {{ stats['total_tasks'] }}
+      </div>
+      <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.5rem;">
+        {{ stats['task_completion_pct'] }}% of study tasks completed
+      </div>
+      <div style="width: 100%; height: 6px; background: var(--border-subtle); border-radius: 999px; margin-top: 0.5rem; overflow: hidden;">
+        <div style="height: 100%; width: {{ stats['task_completion_pct'] }}%; background: var(--accent-emerald);"></div>
+      </div>
+    </div>
+
+    <!-- Metric 4: Quizzes Passed -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Quiz Mastery</span>
+        <div class="card-icon icon-cyan" style="width: 36px; height: 36px; font-size: 1.1rem; margin-bottom: 0;">
+          <i class="bi bi-patch-check"></i>
+        </div>
+      </div>
+      <div style="font-size: 1.85rem; font-weight: 800; color: #0891b2; line-height: 1.2;">
+        {{ stats['quizzes_passed'] }} Passed
+      </div>
+      <div style="font-size: 0.825rem; color: var(--text-muted); margin-top: 0.5rem;">
+        {{ stats['quizzes_taken'] }} tests attempted
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Content Grid -->
+  <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
+    
+    <!-- Left Column: Study Planner & Daily Tasks -->
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800;">
+          <i class="bi bi-calendar2-check" style="color: var(--primary);"></i> Priority Tasks
+        </h3>
+        <a href="{{ url_for('planner') }}" class="btn btn-secondary btn-sm">Full Planner <i class="bi bi-arrow-right"></i></a>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        {% if tasks %}
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for t in tasks %}
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: var(--bg-main);">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="toggleTaskStatus({{ t['id'] }}, this)" style="border-radius: 50%; width: 26px; height: 26px; padding: 0; display: flex; align-items: center; justify-content: center;">
+                    {% if t['status'] == 'completed' %}
+                      <i class="bi bi-check-lg" style="color: #10b981; font-weight: bold;"></i>
+                    {% endif %}
+                  </button>
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.95rem; {% if t['status'] == 'completed' %}text-decoration: line-through; opacity: 0.6;{% endif %}">
+                      {{ t['title'] }}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 0.5rem; align-items: center;">
+                      <span>{{ t['subject'] }}</span> &bull; 
+                      <span>Due: {{ t['due_date'] }}</span> &bull;
+                      <span class="badge {% if t['priority'] == 'High' %}badge-diff-advanced{% elif t['priority'] == 'Medium' %}badge-diff-intermediate{% else %}badge-diff-beginner{% endif %}" style="font-size: 0.65rem; padding: 1px 6px;">
+                        {{ t['priority'] }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <span title="Estimated Pomodoros" style="font-size: 0.8rem; font-weight: 700; color: #f97316;">
+                  🍅 {{ t['pomodoro_count'] }}
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+            <i class="bi bi-check2-all" style="font-size: 2.5rem; color: #10b981;"></i>
+            <p style="margin-top: 0.5rem;">All tasks cleared! Ready to add new goals?</p>
+            <a href="{{ url_for('planner') }}" class="btn btn-primary btn-sm" style="margin-top: 0.75rem;">Add New Task</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Quick Study Rooms List -->
+      <div style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="font-size: 1.35rem; font-weight: 800;">
+            <i class="bi bi-people" style="color: #0891b2;"></i> Study Rooms Active Now
+          </h3>
+          <a href="{{ url_for('rooms') }}" class="btn btn-secondary btn-sm">All Rooms</a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+          {% for r in active_rooms %}
+            <div class="card" style="padding: 1rem; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+              <div>
+                <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem;">{{ r['name'] }}</h4>
+                <div style="font-size: 0.825rem; color: var(--text-muted);">
+                  {{ r['subject'] }} &bull; Ambience: {{ r['bg_sound']|capitalize }}
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.85rem; color: #10b981; font-weight: 700;">
+                  ● {{ r['active_users'] }} peers
+                </span>
+                <a href="{{ url_for('study_room', room_id=r['id']) }}" class="btn btn-primary btn-sm">Join</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Recent Quiz Results & Bookmarks -->
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800;">
+          <i class="bi bi-patch-check" style="color: #f59e0b;"></i> Quiz History
+        </h3>
+        <a href="{{ url_for('quizzes') }}" class="btn btn-secondary btn-sm">Practice More</a>
+      </div>
+
+      <div class="card" style="padding: 1.25rem; margin-bottom: 2rem;">
+        {% if quiz_results %}
+          <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+            {% for qr in quiz_results %}
+              <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-subtle);">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.95rem;">{{ qr['quiz_title'] }}</div>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    {{ qr['score'] }} of {{ qr['total_questions'] }} correct ({{ qr['percentage'] }}%)
+                  </div>
+                </div>
+                <span class="badge {% if qr['passed'] %}badge-diff-beginner{% else %}badge-diff-advanced{% endif %}">
+                  {{ 'Passed' if qr['passed'] else 'Retake' }}
+                </span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+            <p>No quizzes taken yet. Test your knowledge today!</p>
+            <a href="{{ url_for('quizzes') }}" class="btn btn-outline-primary btn-sm" style="margin-top: 0.5rem;">Take a Quiz</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Bookmarked Resources -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800;">
+          <i class="bi bi-bookmark-fill" style="color: var(--primary);"></i> Saved Study Guides
+        </h3>
+        <a href="{{ url_for('resources') }}" class="btn btn-secondary btn-sm">Browse</a>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        {% if bookmarks %}
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for b in bookmarks %}
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <a href="{{ url_for('resource_detail', resource_id=b['id']) }}" style="font-weight: 700; font-size: 0.95rem; color: var(--text-main);">
+                    {{ b['title'] }}
+                  </a>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ b['subject'] }} &bull; {{ b['difficulty'] }}</div>
+                </div>
+                <a href="{{ url_for('resource_detail', resource_id=b['id']) }}" class="btn btn-secondary btn-sm">Read</a>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+            <p>No saved resources yet. Click bookmark on any study guide to keep it here!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function toggleTaskStatus(taskId, btn) {
+  try {
+    const resp = await fetch(`/api/tasks/${taskId}/toggle`, { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) {
+      location.reload();
+    }
+  } catch (err) {
+    showToast('Failed to update task', 'error');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Taking Quiz: {{ quiz['title'] }} | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container quiz-runner-container" style="padding: 2.5rem 1.5rem 5rem;">
+  
+  <!-- Active Quiz Running View -->
+  <div id="quizActiveView">
+    
+    <!-- Top Header & Timer Bar -->
+    <div class="quiz-runner-card">
+      <div class="quiz-top-bar">
+        <div>
+          <h2 style="font-size: 1.45rem; font-weight: 800; margin-bottom: 0.25rem;">{{ quiz['title'] }}</h2>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">
+            Passing Target: {{ quiz['pass_percentage'] }}% &bull; {{ questions|length }} Questions
+          </span>
+        </div>
+
+        <div class="quiz-timer-badge" id="quizTimerDisplay">
+          <i class="bi bi-clock-history"></i> {{ quiz['duration_mins'] }}:00
+        </div>
+      </div>
+
+      <!-- Linear Progress Bar -->
+      <div class="quiz-progress-track">
+        <div class="quiz-progress-fill" id="quizProgressFill" style="width: 0%;"></div>
+      </div>
+
+      <!-- Quick Question Selector Pills -->
+      <div id="questionPillNav" style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 2rem;"></div>
+
+      <!-- Question Text -->
+      <div>
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; margin-bottom: 0.5rem;" id="qIndexHeader">
+          Question 1 of {{ questions|length }}
+        </div>
+        <div style="font-size: 1.3rem; font-weight: 700; line-height: 1.4; color: var(--text-main);" id="questionText">
+          Loading question...
+        </div>
+      </div>
+
+      <!-- Options Container -->
+      <div class="quiz-options-group" id="optionsContainer">
+        <!-- Rendered by quiz.js -->
+      </div>
+
+      <!-- Navigation & Submit Controls -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+        <button type="button" class="btn btn-secondary" id="prevQBtn">
+          <i class="bi bi-arrow-left"></i> Previous
+        </button>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <button type="button" class="btn btn-primary" id="nextQBtn">
+            Next <i class="bi bi-arrow-right"></i>
+          </button>
+          <button type="button" class="btn btn-success" id="submitQuizBtn" style="display: none;">
+            <i class="bi bi-check2-circle"></i> Submit Test
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Quiz Evaluation / Results View (Hidden initially) -->
+  <div id="quizResultView" style="display: none;">
+    <div class="quiz-runner-card">
+      <div style="text-align: center; padding-bottom: 2rem; border-bottom: 1px solid var(--border-subtle);">
+        <div style="margin-bottom: 1rem;">
+          <span id="resultBadge" class="badge" style="font-size: 1rem; padding: 0.5rem 1.25rem;"></span>
+        </div>
+        <h2 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">Assessment Completed!</h2>
+        <div style="font-size: 3.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--primary);" id="resultScoreText">
+          0 / 0
+        </div>
+        <div style="font-size: 1.1rem; color: var(--text-muted); font-weight: 600;">
+          Final Grade: <span id="resultPctText" style="color: var(--text-main);">0%</span>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 1rem;">
+          <a href="{{ url_for('take_quiz', quiz_id=quiz['id']) }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-clockwise"></i> Retake Test
+          </a>
+          <a href="{{ url_for('quizzes') }}" class="btn btn-primary">
+            <i class="bi bi-grid-fill"></i> Quizzes Catalog
+          </a>
+        </div>
+      </div>
+
+      <!-- Solutions Breakdown & Explanations -->
+      <div style="margin-top: 2rem;">
+        <h3 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.25rem;">Detailed Answer Key & Solutions</h3>
+        <div id="breakdownList">
+          <!-- Populated by quiz.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/quiz.js') }}"></script>
+<script>
+  const quizId = {{ quiz['id'] }};
+  const rawQuestions = {{ questions|tojson }};
+  const quizDuration = {{ quiz['duration_mins'] }};
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initQuizRunner(quizId, rawQuestions, quizDuration);
+  });
+</script>
+{% endblock %}

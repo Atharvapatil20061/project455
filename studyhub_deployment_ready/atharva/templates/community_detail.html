@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ topic['title'] }} | Community Q&A{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('community') }}">&larr; Back to All Discussions</a>
+  </div>
+
+  <!-- Main Question Post -->
+  <article class="card" style="padding: 2.5rem; margin-bottom: 2rem;">
+    <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem;">
+      <span class="badge badge-cs">{{ topic['category'] }}</span>
+      <span style="font-size: 0.85rem; color: var(--text-muted);">
+        Asked by <strong>{{ topic['author_name'] }}</strong> &bull; {{ topic['created_at'] }}
+      </span>
+    </div>
+
+    <h1 style="font-size: 1.9rem; font-weight: 800; line-height: 1.3; margin-bottom: 1.25rem;">
+      {{ topic['title'] }}
+    </h1>
+
+    <div style="font-size: 1.05rem; line-height: 1.7; color: var(--text-main); margin-bottom: 1.5rem; white-space: pre-line;">
+      {{ topic['content'] }}
+    </div>
+
+    <!-- Tags and Upvotes -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); flex-wrap: wrap; gap: 0.75rem;">
+      <div style="display: flex; gap: 0.4rem;">
+        {% for tag in topic['tags'].split(',') %}
+          {% if tag.strip() %}
+            <span style="font-size: 0.75rem; color: var(--primary); background: var(--primary-light); padding: 3px 8px; border-radius: 4px; font-weight: 600;">
+              #{{ tag.strip() }}
+            </span>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn btn-secondary btn-sm btn-upvote" data-topic-id="{{ topic['id'] }}">
+        <i class="bi bi-arrow-up-circle-fill" style="color: var(--primary);"></i> Upvote (<span class="upvote-count">{{ topic['upvotes'] }}</span>)
+      </button>
+    </div>
+  </article>
+
+  <!-- Answers / Replies Section -->
+  <div style="margin-bottom: 2.5rem;">
+    <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1.5rem;">
+      <i class="bi bi-chat-quote-fill" style="color: var(--primary);"></i> {{ replies|length }} Answers & Insights
+    </h3>
+
+    {% if replies %}
+      <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        {% for r in replies %}
+          <div class="card" style="padding: 1.75rem; {% if r['is_solution'] %}border: 2px solid #10b981; background: rgba(16, 185, 129, 0.03);{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div class="avatar-circle" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                  {{ r['author_name'][0]|upper }}
+                </div>
+                <div>
+                  <div style="font-weight: 700; font-size: 0.95rem;">{{ r['author_name'] }}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">{{ r['created_at'] }}</div>
+                </div>
+              </div>
+
+              {% if r['is_solution'] %}
+                <span class="badge badge-diff-beginner" style="display: flex; align-items: center; gap: 0.3rem;">
+                  <i class="bi bi-check2-circle"></i> Verified Solution
+                </span>
+              {% endif %}
+            </div>
+
+            <div style="font-size: 1rem; line-height: 1.7; color: var(--text-main); white-space: pre-line;">
+              {{ r['content'] }}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+        <p>No answers submitted yet. Be the first to share your knowledge!</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Post an Answer Form -->
+  <div class="card" style="padding: 2rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">Your Answer</h3>
+    <form method="POST" action="{{ url_for('api_reply_topic', topic_id=topic['id']) }}">
+      <div class="form-group">
+        <textarea name="content" class="form-control" style="min-height: 140px;" placeholder="Write a clear, thoughtful explanation or code solution..." required></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-send-fill"></i> Post Answer
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

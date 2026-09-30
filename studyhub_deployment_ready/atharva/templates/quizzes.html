@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Practice Quizzes & Assessments | Online Study Hub{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem 5rem;">
+  
+  <div style="margin-bottom: 2.5rem;">
+    <h1 style="font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px;">Practice Quizzes & Assessments</h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem; margin-top: 0.25rem;">
+      Benchmark your mastery under timed exam conditions with instant feedback and comprehensive solutions.
+    </p>
+  </div>
+
+  <div class="grid-3">
+    {% for q in quizzes %}
+      <div class="card card-clickable" onclick="window.location='{{ url_for('take_quiz', quiz_id=q['id']) }}'">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+          <span class="badge {% if q['subject'] == 'Computer Science' %}badge-cs{% elif q['subject'] == 'Mathematics' %}badge-math{% else %}badge-web{% endif %}">
+            {{ q['subject'] }}
+          </span>
+          <span class="badge badge-diff-{{ q['difficulty']|lower }}">{{ q['difficulty'] }}</span>
+        </div>
+
+        <h3 class="card-title">{{ q['title'] }}</h3>
+        <p class="card-desc">{{ q['description'] }}</p>
+
+        <!-- Past Best Score Indicator if attempted -->
+        {% if q['id'] in best_scores %}
+          <div style="padding: 0.5rem 0.75rem; background: var(--bg-main); border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.825rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: var(--text-muted);">Personal Best:</span>
+            <span style="font-weight: 700; color: {% if best_scores[q['id']]['passed'] %}#10b981{% else %}#f97316{% endif %};">
+              {{ best_scores[q['id']]['percentage'] }}% ({{ 'Passed' if best_scores[q['id']]['passed'] else 'Needs Work' }})
+            </span>
+          </div>
+        {% endif %}
+
+        <div class="card-footer">
+          <div style="display: flex; gap: 0.75rem; font-size: 0.825rem;">
+            <span><i class="bi bi-question-circle"></i> {{ q['question_count'] }} Qs</span>
+            <span><i class="bi bi-clock"></i> {{ q['duration_mins'] }} mins</span>
+          </div>
+
+          <span class="btn btn-primary btn-sm">
+            Start Test <i class="bi bi-play-fill"></i>
+          </span>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
